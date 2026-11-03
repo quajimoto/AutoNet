@@ -1,0 +1,10 @@
+# Backup files
+*.bak
+*.tmp
+
+# Visual Studio / Build artifacts
+.vs/
+bin/
+obj/
+*.user
+*.suo
