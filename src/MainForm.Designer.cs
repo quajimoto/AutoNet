@@ -382,14 +382,14 @@ namespace AutoNetSwitcher
             // ==================== 4. 트레이 아이콘 및 메뉴 ====================
             this.trayMenu = new ContextMenuStrip();
             this.trayMenu.Renderer = new DarkMenuRenderer();
-            this.trayMenu.ShowImageMargin = false;
+            this.trayMenu.ShowImageMargin = true; // 체크 표시(자동 실행 여부)와 아이콘이 보이도록 여백 사용
             this.trayMenu.BackColor = Theme.Surface;
             this.trayMenu.ForeColor = Theme.Text;
             this.trayMenu.Font = Theme.Ui(9f);
 
-            this.trayMenu.Items.Add("AutoNet 열기", null, (s, e) => { this.RestoreFromTray(); });
-            this.trayMenu.Items.Add("상태 새로고침", null, (s, e) => { this.RefreshNetworkStatus(); });
-            this.trayMenu.Items.Add("저장된 AP 목록 관리", null, (s, e) => { this.RestoreFromTray(); this.ShowSavedProfilesDialog(); });
+            this.trayMenu.Items.Add("AutoNet 열기", UiIcons.Get("wifi", 14, Theme.Accent), (s, e) => { this.RestoreFromTray(); });
+            this.trayMenu.Items.Add("상태 새로고침", UiIcons.Get("refresh-cw", 14, Theme.TextMuted), (s, e) => { this.RefreshNetworkStatus(); });
+            this.trayMenu.Items.Add("저장된 AP 목록 관리", UiIcons.Get("list", 14, Theme.TextMuted), (s, e) => { this.RestoreFromTray(); this.ShowSavedProfilesDialog(); });
             this.trayMenu.Items.Add("-");
             ToolStripMenuItem mnuStartup = new ToolStripMenuItem("윈도우 시작 시 자동 실행");
             mnuStartup.Click += (s, e) =>
@@ -405,7 +405,7 @@ namespace AutoNetSwitcher
             };
             this.trayMenu.Items.Add(mnuStartup);
             this.trayMenu.Items.Add("-");
-            this.trayMenu.Items.Add("종료", null, (s, e) => { this.allowExit = true; this.Close(); });
+            this.trayMenu.Items.Add("종료", UiIcons.Get("power", 14, Theme.Danger), (s, e) => { this.allowExit = true; this.Close(); });
 
             Icon appIcon = null;
             try

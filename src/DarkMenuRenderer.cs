@@ -108,6 +108,17 @@ namespace AutoNetSwitcher
             base.OnRenderItemText(e);
         }
 
+        /// <summary>
+        /// 체크 표시를 다크 테마에 맞게 강조색 체크 아이콘으로 그림
+        /// </summary>
+        protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
+        {
+            if (e == null) return;
+            Rectangle r = e.ImageRectangle;
+            Image check = UiIcons.Get("check", 14, Theme.Success);
+            e.Graphics.DrawImage(check, r.X + (r.Width - check.Width) / 2, r.Y + (r.Height - check.Height) / 2, check.Width, check.Height);
+        }
+
         protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
         {
             if (e == null || e.Item == null)
