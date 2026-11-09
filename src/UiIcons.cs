@@ -207,6 +207,28 @@ namespace AutoNetSwitcher
                             g.DrawLines(pen, chevPoints);
                             break;
 
+                        case "chevron-right":
+                            // Lucide: chevron-right
+                            pen.Width = 2.2f;
+                            g.DrawLines(pen, new PointF[]
+                            {
+                                new PointF(9f, 6f),
+                                new PointF(15f, 12f),
+                                new PointF(9f, 18f)
+                            });
+                            break;
+
+                        case "check":
+                            // Lucide: check
+                            pen.Width = 2.4f;
+                            g.DrawLines(pen, new PointF[]
+                            {
+                                new PointF(5f, 12.5f),
+                                new PointF(10f, 17.5f),
+                                new PointF(19.5f, 7f)
+                            });
+                            break;
+
                         case "trash-2":
                         case "trash":
                             // Lucide: trash-2

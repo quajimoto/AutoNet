@@ -95,3 +95,14 @@
 - **주요 변경 내역**:
   - `.gitignore` 및 `README.md` 추가
   - Git 저장소 초기화(`main` 브랜치) 및 GitHub 원격 저장소(`https://github.com/quajimoto/AutoNet`) 생성·푸시 완료
+
+### [전체 UI 디자인 리뉴얼]
+- **일시**: 2026-11-09
+- **요청**: 폴더 내용을 분석해서 보다 더 나은 디자인으로 변경
+- **주요 변경 내역**:
+  - **공통 디자인 시스템 도입**: `src/Theme.cs`(색상·글꼴·둥근 모서리 헬퍼, Windows 11 DWM 둥근 창 적용) 및 `src/ThemedControls.cs`(`RoundedPanel`, `ModernButton`, `StatusDot`, `PillLabel`, `ThemedInput`, `ThemedDialog`) 추가. 하드코딩 색상을 토큰으로 통일하고 한글 가독성을 위해 UI 글꼴을 `Malgun Gothic`으로 변경
+  - **메인 창 재구성** (`MainForm.Designer.cs`, 340×366): 그라데이션 로고 헤더 + AUTO/MANUAL 알약형 토글, SSID·IP·GW·DNS를 하나의 둥근 연결 카드로 통합, SSID 아래 연결 상태 점/문구(연결됨·고정 IP 프로필 / 미등록 AP / 연결 안 됨) 신설(`UpdateConnectionStatus`), 게이트웨이·DNS 2열 타일, 그라데이션 기본 버튼, 프로필 관리 행에 `›` 표시
+  - **다이얼로그 통일** (`MainForm.Dialogs.cs`): 고정 IP 설정·저장된 프로필·이름 수정·알림 창을 `ThemedDialog`로 재작성(둥근 창, 그림자, 아이콘 제목 바, ESC 닫기). 입력칸은 포커스/오류 시 테두리 색 변화, 프로필 카드는 둥근 카드 + 모드 배지 + 휴지통 아이콘. Wi-Fi 선택 메뉴에 아이콘(현재 연결 ✓, 저장된 AP 강조) 추가
+  - **트레이/팝업 메뉴**: `DarkMenuRenderer`를 테마 색상 및 둥근 선택 하이라이트로 갱신
+  - 기능 로직(자동 연결, IP 할당, 프로필 저장 등)은 변경 없음. 아이콘 `chevron-right`, `check` 추가
+  - `AutoNet.exe` 재빌드 완료 (미리보기 하네스로 메인 창·다이얼로그 렌더링 확인, 실제 관리자 권한 실행은 미검증)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
@@ -235,25 +235,14 @@ namespace AutoNetSwitcher
         private void BtnAutoToggle_Click(object sender, EventArgs e)
         {
             this.isAutoEnabled = !this.isAutoEnabled;
+            this.ApplyAutoToggleStyle();
             if (this.isAutoEnabled)
             {
-                this.btnAutoToggle.Text = " AUTO";
-                this.btnAutoToggle.Image = UiIcons.Get("power", 11, Color.FromArgb(52, 211, 153));
-                this.btnAutoToggle.ForeColor = Color.FromArgb(52, 211, 153);
-                this.btnAutoToggle.BackColor = Color.FromArgb(6, 78, 59);
-                this.btnAutoToggle.FlatAppearance.BorderColor = Color.FromArgb(16, 185, 129);
-                this.toolTip.SetToolTip(this.btnAutoToggle, "AP변경시 고정 IP 자동 전환 활성화됨 (클릭시 수동 모드)");
                 Log("자동 감지 및 전환 기능 활성화됨");
                 this.RefreshNetworkStatus();
             }
             else
             {
-                this.btnAutoToggle.Text = " MANUAL";
-                this.btnAutoToggle.Image = UiIcons.Get("power", 11, Color.FromArgb(148, 163, 184));
-                this.btnAutoToggle.ForeColor = Color.FromArgb(148, 163, 184);
-                this.btnAutoToggle.BackColor = Color.FromArgb(30, 41, 59);
-                this.btnAutoToggle.FlatAppearance.BorderColor = Color.FromArgb(51, 65, 85);
-                this.toolTip.SetToolTip(this.btnAutoToggle, "자동 전환 비활성화됨 (클릭시 자동 모드)");
                 Log("자동 감지 및 전환 기능 비활성화됨 (수동 모드)");
             }
         }

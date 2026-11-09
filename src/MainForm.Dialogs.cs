@@ -43,121 +43,70 @@ namespace AutoNetSwitcher
                 if (!string.IsNullOrEmpty(existing.Dns)) initialDns = existing.Dns;
             }
 
-            using (Form dlg = new Form())
+            const int W = 340;
+            const int fieldW = W - 40;
+            using (ThemedDialog dlg = new ThemedDialog("고정 IP 등록 및 설정", "sliders", W, 446))
             {
-                dlg.FormBorderStyle = FormBorderStyle.None;
-                dlg.StartPosition = FormStartPosition.CenterParent;
-                dlg.Size = new Size(320, 360);
-                dlg.BackColor = Color.FromArgb(15, 23, 42);
-                dlg.ForeColor = Color.FromArgb(248, 250, 252);
-                dlg.TopMost = true;
-
-                dlg.Paint += (s, e) =>
+                // 대상 AP 안내 칩
+                RoundedPanel pnlTarget = new RoundedPanel
                 {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    using (Pen p = new Pen(Color.FromArgb(51, 65, 85), 1.5f))
-                    {
-                        e.Graphics.DrawRectangle(p, 1, 1, dlg.Width - 2, dlg.Height - 2);
-                    }
+                    Location = new Point(20, 54),
+                    Size = new Size(fieldW, 34),
+                    Radius = 9,
+                    BackColor = Theme.Surface,
+                    BorderColor = Theme.Border
                 };
-
-                Panel pnlTop = new Panel { Location = new Point(0, 0), Size = new Size(320, 36), BackColor = Color.Transparent };
-                pnlTop.MouseDown += (s, e) =>
+                Label lblTargetIcon = new Label
                 {
-                    if (e.Button == MouseButtons.Left)
-                    {
-                        NativeMethods.ReleaseCapture();
-                        NativeMethods.SendMessage(dlg.Handle, NativeMethods.WM_NCLBUTTONDOWN, NativeMethods.HTCAPTION, 0);
-                    }
+                    Location = new Point(10, 8),
+                    Size = new Size(18, 18),
+                    Image = UiIcons.Get("wifi", 15, Theme.Accent),
+                    ImageAlign = ContentAlignment.MiddleCenter
                 };
-
-                Label lblDlgTitle = new Label
-                {
-                    Text = " 고정 IP 등록 및 설정",
-                    Image = UiIcons.Get("sliders", 14, Color.FromArgb(56, 189, 248)),
-                    ImageAlign = ContentAlignment.MiddleLeft,
-                    Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(56, 189, 248),
-                    Location = new Point(14, 8),
-                    Padding = new Padding(18, 0, 0, 0),
-                    AutoSize = true
-                };
-
-                Button btnCloseDlg = new Button
-                {
-                    Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)),
-                    ImageAlign = ContentAlignment.MiddleCenter,
-                    BackColor = Color.Transparent,
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(24, 24),
-                    Location = new Point(288, 6),
-                    Cursor = Cursors.Hand
-                };
-                btnCloseDlg.FlatAppearance.BorderSize = 0;
-                btnCloseDlg.MouseEnter += (s, e) => { btnCloseDlg.Image = UiIcons.Get("x", 12, Color.FromArgb(244, 63, 94)); };
-                btnCloseDlg.MouseLeave += (s, e) => { btnCloseDlg.Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)); };
-                btnCloseDlg.Click += (s, e) => { dlg.DialogResult = DialogResult.Cancel; dlg.Close(); };
-
-                pnlTop.Controls.Add(lblDlgTitle);
-                pnlTop.Controls.Add(btnCloseDlg);
-
                 Label lblSub = new Label
                 {
-                    Text = "AP 대상: " + this.currentSsid,
-                    Font = new Font("Segoe UI", 8f),
-                    ForeColor = Color.FromArgb(148, 163, 184),
-                    Location = new Point(16, 42),
-                    Size = new Size(288, 18),
+                    Text = this.currentSsid,
+                    Font = Theme.Ui(9f, FontStyle.Bold),
+                    ForeColor = Theme.Text,
+                    Location = new Point(34, 8),
+                    Size = new Size(fieldW - 44, 18),
                     AutoEllipsis = true
                 };
+                pnlTarget.Controls.Add(lblTargetIcon);
+                pnlTarget.Controls.Add(lblSub);
+                dlg.Controls.Add(pnlTarget);
 
-                Label lblL1 = new Label { Text = "IPv4 주소", Font = new Font("Segoe UI", 8f), ForeColor = Color.FromArgb(203, 213, 225), Location = new Point(16, 68), AutoSize = true };
-                TextBox txtIp = new TextBox { Text = initialIp, Font = new Font("Consolas", 9.5f), BackColor = Color.FromArgb(2, 6, 23), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Location = new Point(16, 88), Size = new Size(288, 22) };
-
-                Label lblL2 = new Label { Text = "서브넷 마스크", Font = new Font("Segoe UI", 8f), ForeColor = Color.FromArgb(203, 213, 225), Location = new Point(16, 118), AutoSize = true };
-                TextBox txtSub = new TextBox { Text = initialSubnet, Font = new Font("Consolas", 9.5f), BackColor = Color.FromArgb(2, 6, 23), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Location = new Point(16, 138), Size = new Size(288, 22) };
-
-                Label lblL3 = new Label { Text = "기본 게이트웨이 (선택 사항)", Font = new Font("Segoe UI", 8f), ForeColor = Color.FromArgb(203, 213, 225), Location = new Point(16, 168), AutoSize = true };
-                TextBox txtGw = new TextBox { Text = initialGw, Font = new Font("Consolas", 9.5f), BackColor = Color.FromArgb(2, 6, 23), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Location = new Point(16, 188), Size = new Size(288, 22) };
-
-                Label lblL4 = new Label { Text = "기본 DNS 주소", Font = new Font("Segoe UI", 8f), ForeColor = Color.FromArgb(203, 213, 225), Location = new Point(16, 218), AutoSize = true };
-                TextBox txtDns = new TextBox { Text = initialDns, Font = new Font("Consolas", 9.5f), BackColor = Color.FromArgb(2, 6, 23), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Location = new Point(16, 238), Size = new Size(288, 22) };
+                ThemedInput inIp = dlg.AddField("IPv4 주소", initialIp, 20, 100, fieldW, true);
+                ThemedInput inSub = dlg.AddField("서브넷 마스크", initialSubnet, 20, 160, fieldW, true);
+                ThemedInput inGw = dlg.AddField("기본 게이트웨이 (선택 사항)", initialGw, 20, 220, fieldW, true);
+                ThemedInput inDns = dlg.AddField("기본 DNS 주소", initialDns, 20, 280, fieldW, true);
+                TextBox txtIp = inIp.TextBox;
+                TextBox txtSub = inSub.TextBox;
+                TextBox txtGw = inGw.TextBox;
+                TextBox txtDns = inDns.TextBox;
 
                 Label lblHint = new Label
                 {
                     Text = "올바른 IPv4 형식(예: 192.168.1.100)을 입력하십시오.",
-                    Font = new Font("Segoe UI", 7.5f),
-                    ForeColor = Color.FromArgb(148, 163, 184),
-                    Location = new Point(16, 268),
-                    Size = new Size(288, 18)
+                    Font = Theme.Ui(8f),
+                    ForeColor = Theme.TextMuted,
+                    Location = new Point(20, 346),
+                    Size = new Size(fieldW, 18)
                 };
 
-                Button btnOk = new Button
-                {
-                    Text = "적용 및 프로필 저장",
-                    Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(15, 23, 42),
-                    BackColor = Color.FromArgb(6, 182, 212),
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(180, 32),
-                    Location = new Point(16, 306),
-                    Cursor = Cursors.Hand
-                };
-                btnOk.FlatAppearance.BorderSize = 0;
+                ModernButton btnOk = ThemedDialog.PrimaryButton("적용 및 프로필 저장");
+                btnOk.IconName = "check";
+                btnOk.IconSize = 13;
+                btnOk.IconColor = Color.White;
+                btnOk.Size = new Size(190, 40);
+                btnOk.Location = new Point(20, 384);
 
-                Button btnCancel = new Button
-                {
-                    Text = "취소",
-                    Font = new Font("Segoe UI", 8.5f),
-                    ForeColor = Color.FromArgb(203, 213, 225),
-                    BackColor = Color.FromArgb(30, 41, 59),
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(100, 32),
-                    Location = new Point(204, 306),
-                    Cursor = Cursors.Hand
-                };
-                btnCancel.FlatAppearance.BorderSize = 0;
+                ModernButton btnCancel = ThemedDialog.SecondaryButton("취소");
+                btnCancel.Size = new Size(fieldW - 190 - 8, 40);
+                btnCancel.Location = new Point(20 + 190 + 8, 384);
                 btnCancel.Click += (s, e) => { dlg.DialogResult = DialogResult.Cancel; dlg.Close(); };
+
+                Action<ThemedInput, bool> mark = (input, ok) => { input.StateBorder = ok ? Color.Empty : Theme.Danger; };
 
                 Action updateValidation = () =>
                 {
@@ -172,40 +121,46 @@ namespace AutoNetSwitcher
                     bool dnsValid = string.IsNullOrEmpty(dnsText) || dnsText == "-" || SecurityHelper.IsValidIpv4(dnsText);
                     bool subnetMatch = SecurityHelper.IsSubnetMatch(ipText, gwText, subText);
 
+                    mark(inIp, ipValid);
+                    mark(inSub, subValid);
+                    mark(inGw, gwValid);
+                    mark(inDns, dnsValid);
+
                     if (!ipValid)
                     {
                         lblHint.Text = "⚠ IPv4 주소 형식이 올바르지 않습니다.";
-                        lblHint.ForeColor = Color.FromArgb(244, 63, 94);
+                        lblHint.ForeColor = Theme.Danger;
                         btnOk.Enabled = false;
                     }
                     else if (!subValid)
                     {
                         lblHint.Text = "⚠ 서브넷 마스크 형식이 올바르지 않습니다.";
-                        lblHint.ForeColor = Color.FromArgb(244, 63, 94);
+                        lblHint.ForeColor = Theme.Danger;
                         btnOk.Enabled = false;
                     }
                     else if (!gwValid)
                     {
                         lblHint.Text = "⚠ 게이트웨이 주소 형식이 올바르지 않습니다.";
-                        lblHint.ForeColor = Color.FromArgb(244, 63, 94);
+                        lblHint.ForeColor = Theme.Danger;
                         btnOk.Enabled = false;
                     }
                     else if (!dnsValid)
                     {
                         lblHint.Text = "⚠ DNS 주소 형식이 올바르지 않습니다.";
-                        lblHint.ForeColor = Color.FromArgb(244, 63, 94);
+                        lblHint.ForeColor = Theme.Danger;
                         btnOk.Enabled = false;
                     }
                     else if (!subnetMatch)
                     {
                         lblHint.Text = "⚠ IP와 게이트웨이가 서로 다른 서브넷 대역입니다.";
-                        lblHint.ForeColor = Color.FromArgb(251, 191, 36);
+                        lblHint.ForeColor = Theme.Warning;
+                        inGw.StateBorder = Theme.Warning;
                         btnOk.Enabled = true;
                     }
                     else
                     {
                         lblHint.Text = "✔ 유효한 네트워크 주소입니다.";
-                        lblHint.ForeColor = Color.FromArgb(52, 211, 153);
+                        lblHint.ForeColor = Theme.Success;
                         btnOk.Enabled = true;
                     }
                 };
@@ -245,19 +200,10 @@ namespace AutoNetSwitcher
                     dlg.Close();
                 };
 
-                dlg.Controls.Add(pnlTop);
-                dlg.Controls.Add(lblSub);
-                dlg.Controls.Add(lblL1);
-                dlg.Controls.Add(txtIp);
-                dlg.Controls.Add(lblL2);
-                dlg.Controls.Add(txtSub);
-                dlg.Controls.Add(lblL3);
-                dlg.Controls.Add(txtGw);
-                dlg.Controls.Add(lblL4);
-                dlg.Controls.Add(txtDns);
                 dlg.Controls.Add(lblHint);
                 dlg.Controls.Add(btnOk);
                 dlg.Controls.Add(btnCancel);
+                dlg.CancelButton = btnCancel;
 
                 dlg.ShowDialog(this);
             }
@@ -268,70 +214,15 @@ namespace AutoNetSwitcher
         /// </summary>
         public void ShowSavedProfilesDialog()
         {
-            using (Form dlg = new Form())
+            const int W = 360;
+            using (ThemedDialog dlg = new ThemedDialog("저장된 AP 네트워크 프로필", "list", W, 440))
             {
-                dlg.FormBorderStyle = FormBorderStyle.None;
-                dlg.StartPosition = FormStartPosition.CenterParent;
-                dlg.Size = new Size(340, 395);
-                dlg.BackColor = Color.FromArgb(15, 23, 42);
-                dlg.ForeColor = Color.FromArgb(248, 250, 252);
-                dlg.TopMost = true;
-
-                dlg.Paint += (s, e) =>
-                {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    using (Pen p = new Pen(Color.FromArgb(51, 65, 85), 1.5f))
-                    {
-                        e.Graphics.DrawRectangle(p, 1, 1, dlg.Width - 2, dlg.Height - 2);
-                    }
-                };
-
-                Panel pnlTop = new Panel { Location = new Point(0, 0), Size = new Size(340, 36), BackColor = Color.Transparent };
-                pnlTop.MouseDown += (s, e) =>
-                {
-                    if (e.Button == MouseButtons.Left)
-                    {
-                        NativeMethods.ReleaseCapture();
-                        NativeMethods.SendMessage(dlg.Handle, NativeMethods.WM_NCLBUTTONDOWN, NativeMethods.HTCAPTION, 0);
-                    }
-                };
-
-                Label lblDlgTitle = new Label
-                {
-                    Text = " 저장된 AP 네트워크 프로필",
-                    Image = UiIcons.Get("list", 14, Color.FromArgb(56, 189, 248)),
-                    ImageAlign = ContentAlignment.MiddleLeft,
-                    Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(56, 189, 248),
-                    Location = new Point(14, 8),
-                    Padding = new Padding(18, 0, 0, 0),
-                    AutoSize = true
-                };
-
-                Button btnCloseDlg = new Button
-                {
-                    Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)),
-                    ImageAlign = ContentAlignment.MiddleCenter,
-                    BackColor = Color.Transparent,
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(24, 24),
-                    Location = new Point(308, 6),
-                    Cursor = Cursors.Hand
-                };
-                btnCloseDlg.FlatAppearance.BorderSize = 0;
-                btnCloseDlg.MouseEnter += (s, e) => { btnCloseDlg.Image = UiIcons.Get("x", 12, Color.FromArgb(244, 63, 94)); };
-                btnCloseDlg.MouseLeave += (s, e) => { btnCloseDlg.Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)); };
-                btnCloseDlg.Click += (s, e) => { dlg.Close(); };
-
-                pnlTop.Controls.Add(lblDlgTitle);
-                pnlTop.Controls.Add(btnCloseDlg);
-
                 Panel pnlList = new Panel
                 {
-                    Location = new Point(14, 42),
-                    Size = new Size(312, 300),
+                    Location = new Point(16, 54),
+                    Size = new Size(W - 32, 316),
                     AutoScroll = true,
-                    BackColor = Color.FromArgb(2, 6, 23)
+                    BackColor = Theme.Bg
                 };
 
                 ToolTip cardToolTip = new ToolTip();
@@ -340,6 +231,7 @@ namespace AutoNetSwitcher
                 Action renderCards = null;
                 renderCards = () =>
                 {
+                    pnlList.SuspendLayout();
                     pnlList.Controls.Clear();
 
                     List<ApProfile> list = new List<ApProfile>();
@@ -353,98 +245,107 @@ namespace AutoNetSwitcher
 
                     if (list.Count == 0)
                     {
+                        Label lblEmptyIcon = new Label
+                        {
+                            Location = new Point(0, 92),
+                            Size = new Size(pnlList.Width, 36),
+                            Image = UiIcons.Get("wifi", 30, Theme.TextSubtle),
+                            ImageAlign = ContentAlignment.MiddleCenter
+                        };
                         Label lblEmpty = new Label
                         {
                             Text = "저장된 Wi-Fi AP 프로필이 없습니다.\nWi-Fi 연결 후 [고정 IP 설정]으로 등록하십시오.",
-                            Font = new Font("Segoe UI", 8.5f),
-                            ForeColor = Color.FromArgb(100, 116, 139),
-                            Location = new Point(16, 100),
-                            Size = new Size(280, 60),
+                            Font = Theme.Ui(8.5f),
+                            ForeColor = Theme.TextMuted,
+                            Location = new Point(0, 134),
+                            Size = new Size(pnlList.Width, 44),
                             TextAlign = ContentAlignment.MiddleCenter
                         };
+                        pnlList.Controls.Add(lblEmptyIcon);
                         pnlList.Controls.Add(lblEmpty);
+                        pnlList.ResumeLayout();
                         return;
                     }
 
-                    int y = 6;
+                    // 스크롤바가 필요한 경우 카드 폭을 줄여 가로 스크롤 방지
+                    int cardH = 70;
+                    int gapY = 8;
+                    bool needsScroll = list.Count * (cardH + gapY) > pnlList.Height;
+                    int cardW = pnlList.Width - (needsScroll ? SystemInformation.VerticalScrollBarWidth + 4 : 0);
+
+                    int y = 0;
                     foreach (ApProfile p in list)
                     {
                         string ssidKey = p.Ssid;
-                        Panel card = new Panel
-                        {
-                            Location = new Point(6, y),
-                            Size = new Size(282, 60),
-                            BackColor = Color.FromArgb(15, 23, 42)
-                        };
+                        bool isStatic = p.Mode == "static";
 
-                        card.Paint += (cs, ce) =>
+                        RoundedPanel card = new RoundedPanel
                         {
-                            ce.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                            using (Pen cp = new Pen(Color.FromArgb(30, 41, 59), 1f))
-                            {
-                                ce.Graphics.DrawRectangle(cp, 0, 0, card.Width - 1, card.Height - 1);
-                            }
+                            Location = new Point(0, y),
+                            Size = new Size(cardW, cardH),
+                            Radius = 11,
+                            BackColor = Theme.Surface,
+                            BorderColor = Theme.Border
                         };
 
                         Label lblSsidName = new Label
                         {
                             Text = p.Ssid,
-                            Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
-                            ForeColor = Color.FromArgb(248, 250, 252),
-                            Location = new Point(8, 6),
-                            Size = new Size(155, 18),
+                            Font = Theme.Ui(9.5f, FontStyle.Bold),
+                            ForeColor = Theme.Text,
+                            Location = new Point(12, 9),
+                            Size = new Size(cardW - 150, 20),
                             AutoEllipsis = true,
                             Cursor = Cursors.Hand
                         };
 
-                        Label lblModeBadge = new Label
+                        PillLabel lblModeBadge = new PillLabel
                         {
-                            Text = (p.Mode == "static") ? "고정 IP" : "DHCP",
-                            Font = new Font("Segoe UI", 7.5f, FontStyle.Bold),
-                            ForeColor = (p.Mode == "static") ? Color.FromArgb(56, 189, 248) : Color.FromArgb(52, 211, 153),
-                            Location = new Point(166, 6),
-                            Size = new Size(52, 16),
-                            TextAlign = ContentAlignment.MiddleRight
+                            Text = isStatic ? "고정 IP" : "DHCP",
+                            ForeColor = isStatic ? Theme.Accent : Theme.Success,
+                            PillColor = isStatic ? Theme.AccentTint : Theme.SuccessTint,
+                            Size = new Size(52, 20),
+                            Location = new Point(cardW - 138, 10)
                         };
 
-                        string detailText = (p.Mode == "static")
-                            ? string.Format("IP: {0} | GW: {1}", p.Ip, string.IsNullOrEmpty(p.Gateway) ? "-" : p.Gateway)
+                        string detailText = isStatic
+                            ? string.Format("IP {0}  ·  GW {1}", p.Ip, string.IsNullOrEmpty(p.Gateway) ? "-" : p.Gateway)
                             : "공유기 자동 할당 (DHCP)";
 
                         Label lblDetails = new Label
                         {
                             Text = detailText,
-                            Font = new Font("Consolas", 7.5f),
-                            ForeColor = Color.FromArgb(148, 163, 184),
-                            Location = new Point(8, 25),
-                            Size = new Size(240, 16),
+                            Font = Theme.Mono(8f),
+                            ForeColor = Theme.TextMuted,
+                            Location = new Point(12, 33),
+                            Size = new Size(cardW - 24, 15),
                             AutoEllipsis = true
                         };
 
-                        string dnsText = (p.Mode == "static") ? ("DNS: " + (p.Dns ?? "-")) : "";
+                        string dnsText = isStatic ? ("DNS " + (p.Dns ?? "-")) : "";
                         Label lblDnsLine = new Label
                         {
                             Text = dnsText,
-                            Font = new Font("Consolas", 7.5f),
-                            ForeColor = Color.FromArgb(100, 116, 139),
-                            Location = new Point(8, 40),
-                            Size = new Size(240, 16),
+                            Font = Theme.Mono(8f),
+                            ForeColor = Theme.TextSubtle,
+                            Location = new Point(12, 49),
+                            Size = new Size(cardW - 24, 15),
                             AutoEllipsis = true
                         };
 
-                        Button btnEdit = new Button
+                        ModernButton btnEdit = new ModernButton
                         {
-                            Image = UiIcons.Get("pencil", 12, Color.FromArgb(148, 163, 184)),
-                            ImageAlign = ContentAlignment.MiddleCenter,
+                            IconName = "pencil",
+                            IconSize = 12,
+                            IconColor = Theme.TextMuted,
+                            IconHoverColor = Theme.Accent,
                             BackColor = Color.Transparent,
-                            FlatStyle = FlatStyle.Flat,
-                            Size = new Size(22, 22),
-                            Location = new Point(224, 4),
-                            Cursor = Cursors.Hand
+                            HoverBackColor = Theme.SurfaceHover,
+                            Radius = 7,
+                            Size = new Size(28, 26),
+                            Location = new Point(cardW - 78, 7),
+                            TabStop = false
                         };
-                        btnEdit.FlatAppearance.BorderSize = 0;
-                        btnEdit.MouseEnter += (es, ee) => { btnEdit.Image = UiIcons.Get("pencil", 12, Color.FromArgb(56, 189, 248)); };
-                        btnEdit.MouseLeave += (es, ee) => { btnEdit.Image = UiIcons.Get("pencil", 12, Color.FromArgb(148, 163, 184)); };
                         btnEdit.Click += (es, ee) =>
                         {
                             ShowRenameProfileDialog(dlg, ssidKey, () => { renderCards(); });
@@ -455,19 +356,19 @@ namespace AutoNetSwitcher
                             ShowRenameProfileDialog(dlg, ssidKey, () => { renderCards(); });
                         };
 
-                        Button btnDel = new Button
+                        ModernButton btnDel = new ModernButton
                         {
-                            Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)),
-                            ImageAlign = ContentAlignment.MiddleCenter,
+                            IconName = "trash-2",
+                            IconSize = 12,
+                            IconColor = Theme.TextMuted,
+                            IconHoverColor = Theme.Danger,
                             BackColor = Color.Transparent,
-                            FlatStyle = FlatStyle.Flat,
-                            Size = new Size(22, 22),
-                            Location = new Point(252, 4),
-                            Cursor = Cursors.Hand
+                            HoverBackColor = Theme.DangerTint,
+                            Radius = 7,
+                            Size = new Size(28, 26),
+                            Location = new Point(cardW - 44, 7),
+                            TabStop = false
                         };
-                        btnDel.FlatAppearance.BorderSize = 0;
-                        btnDel.MouseEnter += (ds, de) => { btnDel.Image = UiIcons.Get("x", 12, Color.FromArgb(244, 63, 94)); };
-                        btnDel.MouseLeave += (ds, de) => { btnDel.Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)); };
                         btnDel.Click += (bs, be) =>
                         {
                             lock (this.profileLock)
@@ -491,27 +392,28 @@ namespace AutoNetSwitcher
                         card.Controls.Add(btnDel);
 
                         pnlList.Controls.Add(card);
-                        y += 66;
+                        y += cardH + gapY;
                     }
+                    pnlList.ResumeLayout();
                 };
 
                 renderCards();
 
-                Button btnClearAll = new Button
+                ModernButton btnClearAll = new ModernButton
                 {
-                    Text = " 전체 삭제",
-                    Image = UiIcons.Get("trash-2", 12, Color.FromArgb(253, 164, 175)),
-                    ImageAlign = ContentAlignment.MiddleLeft,
-                    TextImageRelation = TextImageRelation.ImageBeforeText,
-                    Font = new Font("Segoe UI", 8f),
-                    ForeColor = Color.FromArgb(253, 164, 175),
-                    BackColor = Color.FromArgb(30, 41, 59),
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(100, 30),
-                    Location = new Point(14, 352),
-                    Cursor = Cursors.Hand
+                    Text = "전체 삭제",
+                    IconName = "trash-2",
+                    IconSize = 12,
+                    IconColor = Theme.DangerSoft,
+                    Font = Theme.Ui(8.5f),
+                    ForeColor = Theme.DangerSoft,
+                    BackColor = Color.Transparent,
+                    HoverBackColor = Theme.DangerTint,
+                    BorderColor = Theme.Blend(Theme.Bg, Theme.Danger, 0.35f),
+                    Radius = 9,
+                    Size = new Size(104, 38),
+                    Location = new Point(16, 384)
                 };
-                btnClearAll.FlatAppearance.BorderSize = 0;
                 btnClearAll.Click += (s, e) =>
                 {
                     if (MessageBox.Show("저장된 모든 Wi-Fi AP 프로필을 삭제하시겠습니까?", "확인", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -526,21 +428,11 @@ namespace AutoNetSwitcher
                     }
                 };
 
-                Button btnClose = new Button
-                {
-                    Text = "닫기",
-                    Font = new Font("Segoe UI", 8.5f),
-                    ForeColor = Color.FromArgb(203, 213, 225),
-                    BackColor = Color.FromArgb(30, 41, 59),
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(80, 30),
-                    Location = new Point(246, 352),
-                    Cursor = Cursors.Hand
-                };
-                btnClose.FlatAppearance.BorderSize = 0;
+                ModernButton btnClose = ThemedDialog.SecondaryButton("닫기");
+                btnClose.Size = new Size(92, 38);
+                btnClose.Location = new Point(W - 16 - 92, 384);
                 btnClose.Click += (s, e) => { dlg.Close(); };
 
-                dlg.Controls.Add(pnlTop);
                 dlg.Controls.Add(pnlList);
                 dlg.Controls.Add(btnClearAll);
                 dlg.Controls.Add(btnClose);
@@ -557,122 +449,47 @@ namespace AutoNetSwitcher
             if (string.IsNullOrWhiteSpace(oldSsid))
                 return;
 
-            using (Form dlg = new Form())
+            const int W = 340;
+            const int fieldW = W - 40;
+            using (ThemedDialog dlg = new ThemedDialog("AP 프로필 이름 수정", "pencil", W, 222))
             {
-                dlg.FormBorderStyle = FormBorderStyle.None;
-                dlg.StartPosition = FormStartPosition.CenterParent;
-                dlg.Size = new Size(330, 195);
-                dlg.BackColor = Color.FromArgb(15, 23, 42);
-                dlg.ForeColor = Color.FromArgb(248, 250, 252);
-                dlg.TopMost = true;
-
-                dlg.Paint += (s, e) =>
-                {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    using (Pen p = new Pen(Color.FromArgb(51, 65, 85), 1.5f))
-                    {
-                        e.Graphics.DrawRectangle(p, 1, 1, dlg.Width - 2, dlg.Height - 2);
-                    }
-                };
-
-                Panel pnlTop = new Panel { Location = new Point(0, 0), Size = new Size(330, 36), BackColor = Color.Transparent };
-                pnlTop.MouseDown += (s, e) =>
-                {
-                    if (e.Button == MouseButtons.Left)
-                    {
-                        NativeMethods.ReleaseCapture();
-                        NativeMethods.SendMessage(dlg.Handle, NativeMethods.WM_NCLBUTTONDOWN, NativeMethods.HTCAPTION, 0);
-                    }
-                };
-
-                Label lblDlgTitle = new Label
-                {
-                    Text = " AP 프로필 이름 수정",
-                    Image = UiIcons.Get("pencil", 14, Color.FromArgb(56, 189, 248)),
-                    ImageAlign = ContentAlignment.MiddleLeft,
-                    Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(56, 189, 248),
-                    Location = new Point(14, 8),
-                    Padding = new Padding(18, 0, 0, 0),
-                    AutoSize = true
-                };
-
-                Button btnCloseDlg = new Button
-                {
-                    Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)),
-                    ImageAlign = ContentAlignment.MiddleCenter,
-                    BackColor = Color.Transparent,
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(24, 24),
-                    Location = new Point(298, 6),
-                    Cursor = Cursors.Hand
-                };
-                btnCloseDlg.FlatAppearance.BorderSize = 0;
-                btnCloseDlg.MouseEnter += (s, e) => { btnCloseDlg.Image = UiIcons.Get("x", 12, Color.FromArgb(244, 63, 94)); };
-                btnCloseDlg.MouseLeave += (s, e) => { btnCloseDlg.Image = UiIcons.Get("x", 12, Color.FromArgb(148, 163, 184)); };
-                btnCloseDlg.Click += (s, e) => { dlg.Close(); };
-
-                pnlTop.Controls.Add(lblDlgTitle);
-                pnlTop.Controls.Add(btnCloseDlg);
-
                 Label lblInputPrompt = new Label
                 {
                     Text = "새 이름 (현재: " + oldSsid + ")",
-                    Font = new Font("Segoe UI", 8.5f),
-                    ForeColor = Color.FromArgb(148, 163, 184),
-                    Location = new Point(16, 46),
-                    Size = new Size(298, 18),
+                    Font = Theme.Ui(8.5f),
+                    ForeColor = Theme.TextMuted,
+                    Location = new Point(20, 56),
+                    Size = new Size(fieldW, 18),
                     AutoEllipsis = true
                 };
 
-                TextBox txtNewName = new TextBox
+                ThemedInput inName = new ThemedInput(false)
                 {
-                    Font = new Font("Segoe UI", 9.5f),
-                    ForeColor = Color.FromArgb(248, 250, 252),
-                    BackColor = Color.FromArgb(2, 6, 23),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Location = new Point(16, 68),
-                    Size = new Size(298, 24),
-                    MaxLength = 32,
-                    Text = oldSsid
+                    Location = new Point(20, 78),
+                    Width = fieldW
                 };
+                TextBox txtNewName = inName.TextBox;
+                txtNewName.MaxLength = 32;
+                txtNewName.Text = oldSsid;
 
                 Label lblHint = new Label
                 {
-                    Font = new Font("Segoe UI", 7.5f),
-                    ForeColor = Color.FromArgb(148, 163, 184),
-                    Location = new Point(16, 98),
-                    Size = new Size(298, 34)
+                    Font = Theme.Ui(8f),
+                    ForeColor = Theme.TextMuted,
+                    Location = new Point(20, 118),
+                    Size = new Size(fieldW, 34)
                 };
 
-                Button btnSave = new Button
-                {
-                    Text = " 저장",
-                    Image = UiIcons.Get("pencil", 11, Color.White),
-                    ImageAlign = ContentAlignment.MiddleLeft,
-                    TextImageRelation = TextImageRelation.ImageBeforeText,
-                    Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
-                    ForeColor = Color.White,
-                    BackColor = Color.FromArgb(2, 132, 199),
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(100, 32),
-                    Location = new Point(16, 145),
-                    Cursor = Cursors.Hand
-                };
-                btnSave.FlatAppearance.BorderSize = 0;
+                ModernButton btnSave = ThemedDialog.PrimaryButton("저장");
+                btnSave.IconName = "check";
+                btnSave.IconSize = 13;
+                btnSave.IconColor = Color.White;
+                btnSave.Size = new Size(190, 40);
+                btnSave.Location = new Point(20, 164);
 
-                Button btnCancel = new Button
-                {
-                    Text = "취소",
-                    Font = new Font("Segoe UI", 8.5f),
-                    ForeColor = Color.FromArgb(203, 213, 225),
-                    BackColor = Color.FromArgb(30, 41, 59),
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(80, 32),
-                    Location = new Point(234, 145),
-                    Cursor = Cursors.Hand
-                };
-                btnCancel.FlatAppearance.BorderSize = 0;
+                ModernButton btnCancel = ThemedDialog.SecondaryButton("취소");
+                btnCancel.Size = new Size(fieldW - 190 - 8, 40);
+                btnCancel.Location = new Point(20 + 190 + 8, 164);
                 btnCancel.Click += (s, e) => { dlg.DialogResult = DialogResult.Cancel; dlg.Close(); };
 
                 Action validateInput = () =>
@@ -681,7 +498,8 @@ namespace AutoNetSwitcher
                     if (string.IsNullOrEmpty(newName) || newName.Length > 32 || !SecurityHelper.IsSafeSsid(newName))
                     {
                         lblHint.Text = "⚠ 1~32자 이내, 특수문자(\", &, |, ;, `, $, >, <, \\) 제외";
-                        lblHint.ForeColor = Color.FromArgb(244, 63, 94);
+                        lblHint.ForeColor = Theme.Danger;
+                        inName.StateBorder = Theme.Danger;
                         btnSave.Enabled = false;
                         return;
                     }
@@ -696,13 +514,15 @@ namespace AutoNetSwitcher
                     if (existsOther)
                     {
                         lblHint.Text = "⚠ 이미 등록된 다른 AP 프로필 이름입니다.";
-                        lblHint.ForeColor = Color.FromArgb(244, 63, 94);
+                        lblHint.ForeColor = Theme.Danger;
+                        inName.StateBorder = Theme.Danger;
                         btnSave.Enabled = false;
                         return;
                     }
 
                     lblHint.Text = "✔ 사용 가능한 이름입니다.";
-                    lblHint.ForeColor = Color.FromArgb(52, 211, 153);
+                    lblHint.ForeColor = Theme.Success;
+                    inName.StateBorder = Color.Empty;
                     btnSave.Enabled = true;
                 };
 
@@ -739,9 +559,8 @@ namespace AutoNetSwitcher
 
                 dlg.AcceptButton = btnSave;
                 dlg.CancelButton = btnCancel;
-                dlg.Controls.Add(pnlTop);
                 dlg.Controls.Add(lblInputPrompt);
-                dlg.Controls.Add(txtNewName);
+                dlg.Controls.Add(inName);
                 dlg.Controls.Add(lblHint);
                 dlg.Controls.Add(btnSave);
                 dlg.Controls.Add(btnCancel);
@@ -765,21 +584,22 @@ namespace AutoNetSwitcher
 
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.Renderer = new DarkMenuRenderer();
-            menu.ShowImageMargin = false;
-            menu.BackColor = Color.FromArgb(15, 23, 42);
-            menu.ForeColor = Color.FromArgb(241, 245, 249);
-            menu.Font = new Font("Segoe UI", 9f);
+            menu.ShowImageMargin = true;
+            menu.BackColor = Theme.Surface;
+            menu.ForeColor = Theme.Text;
+            menu.Font = Theme.Ui(9f);
+            menu.Closed += (s, e) => { menu.BeginInvoke(new Action(() => { menu.Dispose(); })); };
 
-            ToolStripLabel titleItem = new ToolStripLabel("── 주변 Wi-Fi AP 검색 목록 ──");
-            titleItem.ForeColor = Color.FromArgb(100, 116, 139);
-            titleItem.Font = new Font("Segoe UI", 7.5f, FontStyle.Bold);
+            ToolStripLabel titleItem = new ToolStripLabel("주변 Wi-Fi AP");
+            titleItem.ForeColor = Theme.TextSubtle;
+            titleItem.Font = Theme.Ui(7.5f, FontStyle.Bold);
             menu.Items.Add(titleItem);
 
             List<string> aps = ScanNearbyWifiAps();
             if (aps.Count == 0)
             {
-                ToolStripLabel noneItem = new ToolStripLabel("  (검색된 Wi-Fi AP 없음)");
-                noneItem.ForeColor = Color.FromArgb(148, 163, 184);
+                ToolStripLabel noneItem = new ToolStripLabel("검색된 Wi-Fi AP 없음");
+                noneItem.ForeColor = Theme.TextMuted;
                 menu.Items.Add(noneItem);
             }
             else
@@ -788,22 +608,28 @@ namespace AutoNetSwitcher
                 {
                     string targetSsid = ap;
                     bool isCurrent = targetSsid.Equals(this.currentSsid, StringComparison.OrdinalIgnoreCase);
-                    string label = isCurrent ? ("✔ " + targetSsid + " (현재 연결)") : ("📶 " + targetSsid);
+                    bool isSaved = FindSavedProfile(targetSsid) != null;
+                    string label = targetSsid + (isCurrent ? "  (현재 연결)" : (isSaved ? "  · 저장됨" : ""));
+                    Image img = isCurrent
+                        ? UiIcons.Get("check", 14, Theme.Success)
+                        : UiIcons.Get("wifi", 14, isSaved ? Theme.Accent : Theme.TextMuted);
 
-                    menu.Items.Add(label, null, (s, e) =>
+                    ToolStripMenuItem item = new ToolStripMenuItem(label, img, (s, e) =>
                     {
                         if (!isCurrent)
                         {
                             ConnectToSsid(targetSsid);
                         }
                     });
+                    if (isCurrent) item.Font = Theme.Ui(9f, FontStyle.Bold);
+                    menu.Items.Add(item);
                 }
             }
 
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("🔄 Wi-Fi 상태 새로고침", null, (s, e) => { this.RefreshNetworkStatus(); });
+            menu.Items.Add("Wi-Fi 상태 새로고침", UiIcons.Get("refresh-cw", 14, Theme.TextMuted), (s, e) => { this.RefreshNetworkStatus(); });
 
-            menu.Show(anchor, new Point(0, anchor.Height));
+            menu.Show(anchor, new Point(0, anchor.Height + 4));
         }
 
         /// <summary>
@@ -811,59 +637,26 @@ namespace AutoNetSwitcher
         /// </summary>
         public void ShowCustomAlert(string message, string title)
         {
-            using (Form dlg = new Form())
+            const int W = 330;
+            using (ThemedDialog dlg = new ThemedDialog(string.IsNullOrEmpty(title) ? "AutoNet 안내" : title, "wifi", W, 176))
             {
-                dlg.FormBorderStyle = FormBorderStyle.None;
-                dlg.StartPosition = FormStartPosition.CenterParent;
-                dlg.Size = new Size(310, 160);
-                dlg.BackColor = Color.FromArgb(15, 23, 42);
-                dlg.ForeColor = Color.FromArgb(248, 250, 252);
-                dlg.TopMost = true;
-
-                dlg.Paint += (s, e) =>
-                {
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    using (Pen p = new Pen(Color.FromArgb(51, 65, 85), 1.5f))
-                    {
-                        e.Graphics.DrawRectangle(p, 1, 1, dlg.Width - 2, dlg.Height - 2);
-                    }
-                };
-
-                Label lblT = new Label
-                {
-                    Text = string.IsNullOrEmpty(title) ? "AutoNet 안내" : title,
-                    Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(34, 211, 238),
-                    Location = new Point(16, 14),
-                    Size = new Size(278, 20)
-                };
-
                 Label lblM = new Label
                 {
                     Text = message ?? string.Empty,
-                    Font = new Font("Segoe UI", 8.5f),
-                    ForeColor = Color.FromArgb(203, 213, 225),
-                    Location = new Point(16, 42),
-                    Size = new Size(278, 64)
+                    Font = Theme.Ui(9f),
+                    ForeColor = Theme.TextSecondary,
+                    Location = new Point(20, 56),
+                    Size = new Size(W - 40, 54)
                 };
 
-                Button btnOk = new Button
-                {
-                    Text = "확인",
-                    Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(241, 245, 249),
-                    BackColor = Color.FromArgb(30, 41, 59),
-                    FlatStyle = FlatStyle.Flat,
-                    Size = new Size(278, 32),
-                    Location = new Point(16, 114),
-                    Cursor = Cursors.Hand
-                };
-                btnOk.FlatAppearance.BorderSize = 0;
+                ModernButton btnOk = ThemedDialog.PrimaryButton("확인");
+                btnOk.Size = new Size(W - 40, 40);
+                btnOk.Location = new Point(20, 118);
                 btnOk.Click += (s, e) => { dlg.Close(); };
 
-                dlg.Controls.Add(lblT);
                 dlg.Controls.Add(lblM);
                 dlg.Controls.Add(btnOk);
+                dlg.AcceptButton = btnOk;
 
                 dlg.ShowDialog(this);
             }

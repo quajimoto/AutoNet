@@ -10,27 +10,27 @@ namespace AutoNetSwitcher
     {
         public override Color ToolStripDropDownBackground
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
 
         public override Color ImageMarginGradientBegin
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
 
         public override Color ImageMarginGradientMiddle
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
 
         public override Color ImageMarginGradientEnd
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
 
         public override Color MenuBorder
         {
-            get { return Color.FromArgb(51, 65, 85); }
+            get { return Theme.Border; }
         }
 
         public override Color MenuItemBorder
@@ -40,42 +40,42 @@ namespace AutoNetSwitcher
 
         public override Color MenuItemSelected
         {
-            get { return Color.FromArgb(30, 41, 59); }
+            get { return Theme.SurfaceHover; }
         }
 
         public override Color MenuItemSelectedGradientBegin
         {
-            get { return Color.FromArgb(30, 41, 59); }
+            get { return Theme.SurfaceHover; }
         }
 
         public override Color MenuItemSelectedGradientEnd
         {
-            get { return Color.FromArgb(30, 41, 59); }
+            get { return Theme.SurfaceHover; }
         }
 
         public override Color MenuItemPressedGradientBegin
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
 
         public override Color MenuItemPressedGradientMiddle
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
 
         public override Color MenuItemPressedGradientEnd
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
 
         public override Color SeparatorDark
         {
-            get { return Color.FromArgb(51, 65, 85); }
+            get { return Theme.Border; }
         }
 
         public override Color SeparatorLight
         {
-            get { return Color.FromArgb(15, 23, 42); }
+            get { return Theme.Surface; }
         }
     }
 
@@ -90,19 +90,19 @@ namespace AutoNetSwitcher
 
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
         {
-            if (e != null)
+            if (e != null && !(e.Item is ToolStripLabel))
             {
                 if (e.Item != null && e.Item.Selected)
                 {
-                    e.TextColor = Color.FromArgb(34, 211, 238); // Cyan Accent
+                    e.TextColor = Theme.Accent; // Cyan Accent
                 }
                 else if (e.Item != null && e.Item.Enabled)
                 {
-                    e.TextColor = Color.FromArgb(241, 245, 249);
+                    e.TextColor = Theme.Text;
                 }
                 else
                 {
-                    e.TextColor = Color.FromArgb(100, 116, 139);
+                    e.TextColor = Theme.TextSubtle;
                 }
             }
             base.OnRenderItemText(e);
@@ -115,14 +115,12 @@ namespace AutoNetSwitcher
 
             if (e.Item.Selected && e.Item.Enabled)
             {
-                Rectangle rect = new Rectangle(2, 1, e.Item.Width - 4, e.Item.Height - 2);
-                using (SolidBrush brush = new SolidBrush(Color.FromArgb(30, 41, 59)))
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                RectangleF rect = new RectangleF(4f, 1f, e.Item.Width - 8f, e.Item.Height - 2f);
+                using (System.Drawing.Drawing2D.GraphicsPath path = Theme.RoundedRect(rect, 6f))
+                using (SolidBrush brush = new SolidBrush(Theme.SurfaceHover))
                 {
-                    e.Graphics.FillRectangle(brush, rect);
-                }
-                using (Pen pen = new Pen(Color.FromArgb(51, 65, 85)))
-                {
-                    e.Graphics.DrawRectangle(pen, rect);
+                    e.Graphics.FillPath(brush, path);
                 }
             }
             else

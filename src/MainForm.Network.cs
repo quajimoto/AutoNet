@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
@@ -127,6 +127,8 @@ namespace AutoNetSwitcher
                         {
                             this.lblSsid.Text = string.IsNullOrEmpty(ssid) ? "연결된 Wi-Fi 없음" : ssid;
                         }
+
+                        UpdateConnectionStatus(!isDisconnected && !string.IsNullOrEmpty(ssid), currentProf);
 
                         this.lblCurrentIp.Text = string.IsNullOrEmpty(net.Ip) ? "0.0.0.0" : net.Ip;
                         this.lblGateway.Text = string.IsNullOrEmpty(net.Gateway) ? "-" : net.Gateway;
