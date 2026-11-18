@@ -351,10 +351,29 @@ namespace AutoNetSwitcher
                             ShowRenameProfileDialog(dlg, ssidKey, () => { renderCards(); });
                         };
 
-                        lblSsidName.DoubleClick += (ls, le) =>
+                        // 클릭: 카드 선택 강조 / 더블클릭: 이 프로필 설정으로 즉시 변경
+                        ApProfile cardProfile = p;
+                        EventHandler selectCard = (cs, ce) =>
                         {
-                            ShowRenameProfileDialog(dlg, ssidKey, () => { renderCards(); });
+                            foreach (Control other in pnlList.Controls)
+                            {
+                                RoundedPanel rp = other as RoundedPanel;
+                                if (rp != null) rp.BorderColor = Theme.Border;
+                            }
+                            card.BorderColor = Theme.AccentStrong;
                         };
+                        EventHandler applyCard = (cs, ce) =>
+                        {
+                            ApplySavedProfile(cardProfile);
+                            dlg.Close();
+                        };
+                        foreach (Control target in new Control[] { card, lblSsidName, lblModeBadge, lblDetails, lblDnsLine })
+                        {
+                            target.Cursor = Cursors.Hand;
+                            target.Click += selectCard;
+                            target.DoubleClick += applyCard;
+                            cardToolTip.SetToolTip(target, "더블클릭하여 이 설정으로 변경");
+                        }
 
                         ModernButton btnDel = new ModernButton
                         {
@@ -380,7 +399,6 @@ namespace AutoNetSwitcher
                             renderCards();
                         };
 
-                        cardToolTip.SetToolTip(lblSsidName, "더블 클릭하여 이름 변경");
                         cardToolTip.SetToolTip(btnEdit, "이름 변경");
                         cardToolTip.SetToolTip(btnDel, "삭제");
 

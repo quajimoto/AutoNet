@@ -414,7 +414,7 @@ namespace AutoNetSwitcher
         /// <summary>
         /// 지정한 SSID로 연결 후 저장된 프로필이 있으면 즉시 IP 할당
         /// </summary>
-        public void ConnectToSsid(string ssid)
+        public void ConnectToSsid(string ssid, Action onConnected = null)
         {
             if (string.IsNullOrWhiteSpace(ssid) || !SecurityHelper.IsSafeSsid(ssid))
             {
@@ -450,12 +450,41 @@ namespace AutoNetSwitcher
                     this.lastConnectedSsid = string.Empty;
 
                     Thread.Sleep(1800);
+                    if (onConnected != null) onConnected();
                     RefreshNetworkStatus();
                 }
                 catch (Exception ex)
                 {
                     Log("ConnectToSsid 오류: " + ex.Message);
                 }
+            });
+        }
+
+        /// <summary>
+        /// 저장된 프로필 설정을 즉시 적용 (다른 AP면 먼저 연결 후, 연결이 확인되면 적용 — MANUAL 모드에서도 동작)
+        /// </summary>
+        public void ApplySavedProfile(ApProfile p)
+        {
+            if (p == null) return;
+
+            Action apply = () =>
+            {
+                Log(string.Format("저장된 프로필 수동 적용: '{0}' ({1})", p.Ssid, p.Mode));
+                if (p.Mode == "static") ApplyStaticIp(p.Ip, p.Gateway, p.Dns, p.Subnet);
+                else ApplyDhcpSilent();
+            };
+
+            if (p.MatchesSsid(this.currentSsid))
+            {
+                apply();
+                return;
+            }
+
+            ConnectToSsid(p.Ssid, () =>
+            {
+                // 연결 실패 시 다른 네트워크에 잘못된 IP가 들어가지 않도록 실제 연결 AP 재확인
+                if (p.MatchesSsid(GetConnectedSsid())) apply();
+                else Log(string.Format("프로필 적용 취소: '{0}' 연결 실패", p.Ssid));
             });
         }
 

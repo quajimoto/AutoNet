@@ -116,3 +116,92 @@
   - **`사용_매뉴얼.html` 재생성**: 기존 스타일 유지, v2.0 본문과 새 이미지 4종 Base64 내장
   - **`README.md`**: 화면 구성·사용 방법 섹션을 매뉴얼 v2.0과 동기화하고 전체 매뉴얼 링크 추가
   - **버그 수정**: 트레이 메뉴가 이미지 여백을 숨겨 `[윈도우 시작 시 자동 실행]` 체크 표시가 보이지 않던 문제 수정(여백 표시 + 테마 체크 아이콘 렌더링), 트레이 메뉴 항목 아이콘 추가 (`MainForm.Designer.cs`, `DarkMenuRenderer.cs`). `AutoNet.exe` 재빌드
+
+### [Superpowers 플러그인 설치]
+- **일시**: 2026-11-11
+- **요청**: `/plugin install superpowers@claude-plugins-official` 로 Superpowers 설치
+- **주요 변경 내역**:
+  - 이 PC에는 `claude-plugins-official` 마켓플레이스가 등록되어 있지 않아, 등록된 `anthropic-plugin-directory` 마켓플레이스에서 `superpowers` 플러그인을 사용자 범위(user scope)로 설치 완료. 프로젝트 코드 변경 없음
+
+### [claude-plugins-official 마켓플레이스 등록]
+- **일시**: 2026-11-11
+- **요청**: 이 PC에 `claude-plugins-official` 마켓플레이스 등록
+- **주요 변경 내역**:
+  - `claude plugin marketplace add anthropics/claude-plugins-official`로 GitHub 공식 마켓플레이스를 사용자 설정에 등록 완료. 이제 `anthropic-plugin-directory`(내장)와 `claude-plugins-official` 두 마켓플레이스 사용 가능. 프로젝트 코드 변경 없음
+
+### [Superpowers 설치 재실행 (claude-plugins-official)]
+- **일시**: 2026-11-11
+- **요청**: 이전에 실패한 `superpowers@claude-plugins-official` 설치 재실행
+- **주요 변경 내역**:
+  - 마켓플레이스 등록 후 재설치 실행. 동일 플러그인(obra/superpowers)이 `anthropic-plugin-directory`에서 이미 설치되어 있어 `--replace`로 설치 출처를 `claude-plugins-official`로 전환 (버전 6.4.2 → 7.0.0, 플러그인 설정 유지, user scope, 활성화 상태). 프로젝트 코드 변경 없음
+
+### [Karpathy Skill 설치]
+- **일시**: 2026-11-11
+- **요청**: Karpathy Skill 설치
+- **주요 변경 내역**:
+  - 사용자 선택에 따라 GitHub 커뮤니티 저장소 `forrestchang/andrej-karpathy-skills`를 마켓플레이스(`karpathy-skills`)로 등록하고 `andrej-karpathy-skills@karpathy-skills` v1.0.0을 user scope로 설치 (스킬 `karpathy-guidelines`: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution). 설치 전 확인 결과 Markdown 지침 파일만 있고 훅·스크립트 없음. 프로젝트 코드 변경 없음
+
+### [Ponytail 설치 시도]
+- **일시**: 2026-11-11
+- **요청**: Ponytail 설치
+- **주요 변경 내역**:
+  - 원본 저장소 `DietrichGebert/ponytail`을 마켓플레이스(`ponytail`)로 등록 완료
+  - 훅 검토: SessionStart/SubagentStart/UserPromptSubmit에서 Node 스크립트 실행(로컬 `git ls-files` 등), 작업 기록을 `~/.config/ponytail/band/`에 CSV로 저장, 웹훅은 URL 설정 시에만 전송(기본 비어 있음)
+  - `claude plugin install ponytail@ponytail` 실행은 자동 모드 권한 분류기에 의해 차단됨(외부 코드 통합) → 사용자가 직접 설치 명령을 실행해야 함. 플러그인 미설치 상태. 프로젝트 코드 변경 없음
+
+### [Ponytail 설치 완료 확인]
+- **일시**: 2026-11-11
+- **주요 변경 내역**:
+  - 사용자가 직접 `claude plugin install ponytail@ponytail` 실행 → `ponytail@ponytail` v5.3.3 user scope 설치·활성화 확인. 현재 설치 플러그인: andrej-karpathy-skills 1.0.0, ponytail 5.3.3, superpowers 7.0.0
+
+### [Unslop UI 설치 시도]
+- **일시**: 2026-11-11
+- **요청**: Unslop AI 설치 → 사용자 선택: 디자인 퀄리티 개선용
+- **주요 변경 내역**:
+  - 디자인용 Unslop은 `yuwen-lu/unslop-ui`(MIT, v1.0.0)로 확인. 저장소 검토 결과 SKILL.md(UI 안티패턴 규칙: 동일 색조 남용, 둥근 사각형 아이콘, 이모지 남용, 글래스모피즘, 과한 그라데이션·그림자 등)와 예시 이미지뿐, 훅·스크립트 없음
+  - 마켓플레이스 등록·설치 명령은 자동 모드 권한 분류기에 의해 차단됨 → 사용자가 직접 실행 필요. 미설치 상태. 프로젝트 코드 변경 없음
+
+### [Unslop UI 설치 확인 — 미설치]
+- **일시**: 2026-11-11
+- **주요 변경 내역**:
+  - 확인 결과 `unslop-ui` 마켓플레이스 미등록, 플러그인 미설치 상태. 사용자에게 두 명령(`marketplace add yuwen-lu/unslop-ui`, `install unslop-ui@unslop-ui`) 재실행 안내
+
+### [Unslop UI 설치 완료 확인]
+- **일시**: 2026-11-11
+- **주요 변경 내역**:
+  - 사용자가 직접 설치 명령 실행 → `unslop-ui@unslop-ui` v1.0.0 user scope 설치·활성화 확인. 현재 설치 플러그인: andrej-karpathy-skills 1.0.0, ponytail 5.3.3, superpowers 7.0.0, unslop-ui 1.0.0
+
+### [gstack 설치 검토]
+- **일시**: 2026-11-11
+- **요청**: gstack 설치
+- **주요 변경 내역**:
+  - 원본 `garrytan/gstack`을 임시 폴더에 받아 검토. 마켓플레이스 플러그인이 아니라 `~/.claude/skills/gstack`에 clone 후 `setup.ps1` 실행 방식
+  - setup이 하는 일: Bun 필요(이 PC 미설치 → `winget install --id Oven-sh.Bun -e`), Playwright Chromium 다운로드, 로컬 바이너리 빌드, 전역 `~/.claude/settings.json`에 훅 등록(백업 생성), 업데이트 확인 기본 켜짐, 텔레메트리는 기본 꺼짐(최초 1회 질문). Windows는 "최소 지원" 등급, Smart App Control 켜져 있으면 일부 바이너리 차단
+  - 시스템 패키지 설치·전역 훅 등록이 포함되어 직접 실행하지 않고 사용자에게 설치 명령 안내(`--prefix` 권장: 기존 Superpowers 등과 명령 이름 충돌 방지). 미설치 상태. 프로젝트 코드 변경 없음
+
+### [gstack 설치 확인 — 미설치]
+- **일시**: 2026-11-11
+- **주요 변경 내역**:
+  - 확인 결과 Bun 미설치, `~/.claude/skills/gstack` 폴더 없음, settings.json에 gstack 훅 없음 → 1단계(Bun 설치)부터 진행되지 않은 상태. 사용자에게 재안내
+
+### [gstack 설치 완료 확인]
+- **일시**: 2026-11-11
+- **주요 변경 내역**:
+  - Bun 1.4.4는 winget으로 설치되어 있었으나 기존 PowerShell 창에 PATH가 반영되지 않아 `bun` 인식 실패 → 새 창/PATH 갱신 안내
+  - 사용자가 설치 완료 → `~/.claude/skills/gstack` v1.99.0.0, `gstack-` 접두사 스킬 62개 + `_gstack-command` 설치, browse 바이너리(`browse.exe`, `find-browse.exe`) 빌드 확인. 전역 settings.json에는 gstack 훅 항목 없음. `setup --status`는 자동 모드에서 실행 차단되어 미확인
+
+### [gstack 상태 점검 결과]
+- **일시**: 2026-11-11
+- **주요 변경 내역**:
+  - 사용자 터미널의 `setup.ps1 --status` 결과 확인: claude/global/current 1.99.0.0 (스킬 `gstack-` 접두사 61개 — 이전 기록의 62개는 오기)
+  - 훅: Stop 훅(`gstack-timeline-stop`)만 전역 settings.json에 등록됨. plan-tune 훅 2개와 pre-push 자격증명 가드는 응답 없음으로 건너뜀
+  - 문제 1건: 섹션 링크 114개 중 1개 깨짐(`gstack-review/SKILL.md` → `../qa/sections/exploratory.md`, 접두사 설치로 경로가 `gstack-qa`가 된 탓으로 추정). Codex 미설치로 외부 리뷰(codex_reviews=enabled)는 사용 불가
+
+### [저장된 AP 프로필 더블클릭 시 설정 즉시 적용]
+- **일시**: 2026-11-18
+- **요청**: 저장된 AP 프로필 관리 메뉴에서 리스트 중 하나를 선택 후 더블클릭하면 해당 설정으로 변경
+- **주요 변경 내역**:
+  - `MainForm.Dialogs.cs`: 프로필 카드 클릭 시 선택 강조(파란 테두리), 카드(이름·배지·정보 포함) 더블클릭 시 해당 프로필 적용 후 창 닫기. 기존 "이름 더블클릭 = 이름 수정"은 충돌하므로 제거하고 이름 수정은 연필 아이콘으로만 가능
+  - `MainForm.Network.cs`: `ApplySavedProfile` 추가 — 현재 연결된 AP의 프로필이면 고정 IP/DHCP 즉시 적용, 다른 AP면 먼저 연결 후 실제 연결 SSID를 재확인하고 적용(연결 실패 시 다른 네트워크에 잘못된 IP가 들어가지 않도록 취소). MANUAL 모드에서도 동작. `ConnectToSsid`에 연결 후 콜백 인자(선택) 추가
+  - 매뉴얼 v2.1: `사용_매뉴얼.md`/`.html`, `README.md` 설명 갱신, `manual_images/03_saved_profiles.png` 콜아웃 문구 수정
+  - `AutoNet.exe` 재빌드 (선택 강조는 미리보기로 확인, 실제 IP 적용은 관리자 권한 실행으로 미검증)
