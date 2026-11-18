@@ -438,6 +438,8 @@ namespace AutoNetSwitcher
                         }
                     }
 
+                    // 수동 연결 중 잠깐 끊긴 사이에 자동 연결이 다른 저장 AP를 잡지 않도록 ~18초 유예
+                    this.lastAutoConnectTime = DateTime.Now.AddSeconds(10);
                     Log("Wi-Fi 연결 시도: " + actualSsid);
                     string escapedSsid = actualSsid.Replace("\"", "\\\"");
                     string args = string.Format("wlan connect name=\"{0}\"", escapedSsid);
@@ -467,11 +469,18 @@ namespace AutoNetSwitcher
         {
             if (p == null) return;
 
+            // 결과를 트레이 알림으로 표시 (로그에만 남기면 화면상 아무 반응이 없어 보임)
+            Action<string, ToolTipIcon> notify = (msg, icon) => SafeInvoke(() =>
+            {
+                if (this.trayIcon != null) this.trayIcon.ShowBalloonTip(3000, "AutoNet", msg, icon);
+            });
+
             Action apply = () =>
             {
                 Log(string.Format("저장된 프로필 수동 적용: '{0}' ({1})", p.Ssid, p.Mode));
                 if (p.Mode == "static") ApplyStaticIp(p.Ip, p.Gateway, p.Dns, p.Subnet);
                 else ApplyDhcpSilent();
+                notify(string.Format("'{0}' 프로필 적용: {1}", p.Ssid, p.Mode == "static" ? "고정 IP " + p.Ip : "DHCP 자동"), ToolTipIcon.Info);
             };
 
             if (p.MatchesSsid(this.currentSsid))
@@ -484,7 +493,11 @@ namespace AutoNetSwitcher
             {
                 // 연결 실패 시 다른 네트워크에 잘못된 IP가 들어가지 않도록 실제 연결 AP 재확인
                 if (p.MatchesSsid(GetConnectedSsid())) apply();
-                else Log(string.Format("프로필 적용 취소: '{0}' 연결 실패", p.Ssid));
+                else
+                {
+                    Log(string.Format("프로필 적용 취소: '{0}' 연결 실패 (실제 SSID: {1})", p.Ssid, p.OriginalSsid));
+                    notify(string.Format("Wi-Fi '{0}'에 연결하지 못해 '{1}' 프로필을 적용하지 않았습니다.\n주변에 해당 Wi-Fi가 있는지, 실제 SSID가 맞는지 확인하세요.", p.OriginalSsid, p.Ssid), ToolTipIcon.Warning);
+                }
             });
         }
 

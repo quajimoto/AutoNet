@@ -205,3 +205,16 @@
   - `MainForm.Network.cs`: `ApplySavedProfile` 추가 — 현재 연결된 AP의 프로필이면 고정 IP/DHCP 즉시 적용, 다른 AP면 먼저 연결 후 실제 연결 SSID를 재확인하고 적용(연결 실패 시 다른 네트워크에 잘못된 IP가 들어가지 않도록 취소). MANUAL 모드에서도 동작. `ConnectToSsid`에 연결 후 콜백 인자(선택) 추가
   - 매뉴얼 v2.1: `사용_매뉴얼.md`/`.html`, `README.md` 설명 갱신, `manual_images/03_saved_profiles.png` 콜아웃 문구 수정
   - `AutoNet.exe` 재빌드 (선택 강조는 미리보기로 확인, 실제 IP 적용은 관리자 권한 실행으로 미검증)
+
+### [프로필 더블클릭 적용이 안 되는 문제 분석 및 수정]
+- **일시**: 2026-11-18
+- **요청**: 저장된 AP 프로필을 선택 후 더블클릭해도 변경되지 않음 — 분석 및 해결
+- **원인 (autonet.log / autonet_profiles.txt 분석)**:
+  1. 프로필 `회사`의 실제 SSID 필드가 `회사`로 저장되어 있었음(`회사|static|10.101.3.191|...|회사`). 실제 Wi-Fi 이름이 없어 연결 실패 → 적용 취소(`프로필 적용 취소: '회사' 연결 실패`). 실제 SSID 필드가 생기기 전 구버전에서 이름을 바꾼 데이터로 추정
+  2. 성공/실패가 로그에만 남아 화면상 아무 반응이 없어 보였음 (`SHC_Guest`(DHCP) 더블클릭은 실제로 적용됐으나 이미 DHCP라 변화 없음)
+  3. 수동 연결 직후 잠깐 끊긴 사이에 주기적 자동 연결이 첫 번째 저장 AP(`SHC_Guest`)를 잡아 수동 적용이 취소될 수 있는 경쟁 상태
+- **조치**:
+  - 사용자 확인에 따라 `%LocalAppData%\AutoNet\autonet_profiles.txt`의 `회사` 프로필 실제 SSID를 `SHC`로 수정 (백업: `autonet_profiles.txt.bak`)
+  - `ApplySavedProfile`: 적용 성공/연결 실패를 트레이 알림으로 표시
+  - `ConnectToSsid`: 수동 연결 시 자동 연결을 약 18초 유예
+  - `AutoNet.exe` 재빌드 (실제 실행 검증은 사용자 확인 필요)
