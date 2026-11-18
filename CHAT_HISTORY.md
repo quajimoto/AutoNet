@@ -218,3 +218,16 @@
   - `ApplySavedProfile`: 적용 성공/연결 실패를 트레이 알림으로 표시
   - `ConnectToSsid`: 수동 연결 시 자동 연결을 약 18초 유예
   - `AutoNet.exe` 재빌드 (실제 실행 검증은 사용자 확인 필요)
+
+### [SHC_Guest DHCP 전환 후 이전 IP가 남는 문제 분석]
+- **일시**: 2026-11-18
+- **요청**: SHC_Guest 선택 후 DHCP 자동을 눌러도 이전 IP가 남음 — DHCP 자동 클릭 시 자동 IP를 받아오게
+- **실측 시험 (사용자 승인, AutoNet 일시 중지 후 실제 어댑터에서 수행, 종료 후 SHC + 10.101.3.191 복구)**:
+  - `netsh ... source=dhcp`는 정상 동작(exit 0, 고정 IP·게이트웨이 제거, DHCP 활성)
+  - `SHC_Guest` 연결은 `authenticating` 상태로 13초 이상 머문 뒤 `disconnected` → DHCP 서버에 닿지 못해 IP 없음/169.254.x.x
+  - Windows WLAN 이벤트 로그 사유: "동적 키 교환이 구성된 시간 내에 성공하지 못했습니다" → Windows에 저장된 SHC_Guest Wi-Fi 비밀번호 불일치로 추정
+  - 사용자가 본 "이전 IP"는 SHC_Guest 연결 실패 후 AutoNet 자동 연결이 SHC로 돌아가 고정 IP 10.101.3.191을 재적용한 것
+- **조치**:
+  - `WaitForWifiConnected` 추가: netsh가 인증 중에도 SSID를 표시하므로 상태가 `connected/연결됨`이 될 때까지 최대 15초 대기 후 프로필 적용, 실패 시 "Wi-Fi 비밀번호/실제 SSID 확인" 트레이 경고
+  - `AutoNet.exe` 재빌드 후 재실행 (현재 SHC + 10.101.3.191 정상)
+  - **사용자 조치 필요**: Windows 설정 → Wi-Fi → 알려진 네트워크 관리 → SHC_Guest 삭제 후 올바른 비밀번호로 다시 연결

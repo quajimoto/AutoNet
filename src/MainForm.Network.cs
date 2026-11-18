@@ -463,6 +463,28 @@ namespace AutoNetSwitcher
         }
 
         /// <summary>
+        /// 프로필의 AP에 "인증 완료(connected)" 상태가 될 때까지 대기.
+        /// netsh는 인증 중(authenticating)에도 SSID를 표시하므로 SSID만으로는 연결 여부를 판단할 수 없음
+        /// </summary>
+        private bool WaitForWifiConnected(ApProfile p, int timeoutSec)
+        {
+            DateTime until = DateTime.Now.AddSeconds(timeoutSec);
+            do
+            {
+                string output;
+                if (SecurityHelper.ExecuteNetshDirect("wlan show interfaces", out output, 4000) &&
+                    System.Text.RegularExpressions.Regex.IsMatch(output ?? "", @"^\s*(State|상태)\s*:\s*(connected|연결됨)\s*$",
+                        System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase) &&
+                    p.MatchesSsid(GetConnectedSsid()))
+                {
+                    return true;
+                }
+                Thread.Sleep(1000);
+            } while (DateTime.Now < until);
+            return false;
+        }
+
+        /// <summary>
         /// 저장된 프로필 설정을 즉시 적용 (다른 AP면 먼저 연결 후, 연결이 확인되면 적용 — MANUAL 모드에서도 동작)
         /// </summary>
         public void ApplySavedProfile(ApProfile p)
@@ -492,11 +514,11 @@ namespace AutoNetSwitcher
             ConnectToSsid(p.Ssid, () =>
             {
                 // 연결 실패 시 다른 네트워크에 잘못된 IP가 들어가지 않도록 실제 연결 AP 재확인
-                if (p.MatchesSsid(GetConnectedSsid())) apply();
+                if (WaitForWifiConnected(p, 15)) apply();
                 else
                 {
                     Log(string.Format("프로필 적용 취소: '{0}' 연결 실패 (실제 SSID: {1})", p.Ssid, p.OriginalSsid));
-                    notify(string.Format("Wi-Fi '{0}'에 연결하지 못해 '{1}' 프로필을 적용하지 않았습니다.\n주변에 해당 Wi-Fi가 있는지, 실제 SSID가 맞는지 확인하세요.", p.OriginalSsid, p.Ssid), ToolTipIcon.Warning);
+                    notify(string.Format("Wi-Fi '{0}'에 연결(인증)하지 못해 '{1}' 프로필을 적용하지 않았습니다.\nWindows에 저장된 Wi-Fi 비밀번호와 실제 SSID를 확인하세요.", p.OriginalSsid, p.Ssid), ToolTipIcon.Warning);
                 }
             });
         }
