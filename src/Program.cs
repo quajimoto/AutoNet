@@ -61,7 +61,7 @@ namespace AutoNetSwitcher
                 catch (Exception ex)
                 {
                     // UAC 거부 또는 취소 시 친절한 안내 후 종료
-                    LogCrash("UAC 관리자 권한 요청 거부: " + ex.Message);
+                    LogCrash("관리자 권한 요청 (UAC 거부)", ex);
                     if (!isAutoStart)
                     {
                         MessageBox.Show(
@@ -90,7 +90,7 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                LogCrash("뮤텍스 생성 실패 (중복 실행 간주): " + ex.Message);
+                LogCrash("중복 실행 검사 (뮤텍스 생성 실패)", ex);
                 if (!isAutoStart)
                 {
                     NotifyExistingInstanceAndExit();
@@ -112,9 +112,9 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                LogCrash("애플리케이션 메인 루프 치명적 오류:\n" + ex.ToString());
+                LogCrash("애플리케이션 메인 루프 (치명적 오류)", ex);
                 MessageBox.Show(
-                    "AutoNet 실행 중 예기치 않은 오류가 발생했습니다.\n자세한 기술 정보는 로그(autonet_crash.log)에 안전하게 기록되었습니다.",
+                    "AutoNet 실행 중 예기치 않은 오류가 발생했습니다.\n자세한 기술 정보는 로그(AutoNet_Error.log)에 날짜·시간과 함께 기록되었습니다.",
                     "AutoNet 오류 안내",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -199,8 +199,7 @@ namespace AutoNetSwitcher
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            string detail = (e.ExceptionObject != null) ? e.ExceptionObject.ToString() : "알 수 없는 오류";
-            LogCrash("비정형 미처리 예외 (Domain UnhandledException):\n" + detail);
+            LogCrash("미처리 예외 (Domain UnhandledException)", e.ExceptionObject as Exception);
             MessageBox.Show(
                 "시스템 오류가 발생하여 안전하게 복구되었습니다.\n네트워크 상태를 다시 확인해 주십시오.",
                 "AutoNet 시스템 알림",
@@ -210,8 +209,7 @@ namespace AutoNetSwitcher
 
         private static void OnThreadException(object sender, ThreadExceptionEventArgs e)
         {
-            string detail = (e.Exception != null) ? e.Exception.ToString() : "알 수 없는 UI 스레드 오류";
-            LogCrash("UI 스레드 예외 (ThreadException):\n" + detail);
+            LogCrash("UI 스레드 예외 (ThreadException)", e.Exception);
             MessageBox.Show(
                 "화면 표시 중 오류가 발생했습니다.\n작업을 계속 진행합니다.",
                 "AutoNet UI 알림",
@@ -219,18 +217,9 @@ namespace AutoNetSwitcher
                 MessageBoxIcon.Warning);
         }
 
-        private static void LogCrash(string message)
+        private static void LogCrash(string where, Exception ex)
         {
-            try
-            {
-                string crashLogPath = SecurityHelper.GetSafeAppDataPath("autonet_crash.log");
-                string logEntry = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] {1}\r\n----------------------------------------\r\n", DateTime.Now, message);
-                File.AppendAllText(crashLogPath, logEntry);
-            }
-            catch
-            {
-                // 로깅 실패 시 2차 장애 방지
-            }
+            ErrorLog.Write(where, ex);
         }
     }
 }

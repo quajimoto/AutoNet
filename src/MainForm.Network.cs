@@ -35,7 +35,7 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                Log("모니터링 타이머 시작 오류: " + ex.Message);
+                LogError("모니터링 타이머 시작 오류", ex);
             }
         }
 
@@ -197,7 +197,7 @@ namespace AutoNetSwitcher
                 }
                 catch (Exception ex)
                 {
-                    Log("네트워크 상태 갱신 백그라운드 예외: " + ex.Message);
+                    LogError("네트워크 상태 갱신 백그라운드 예외", ex);
                 }
                 finally
                 {
@@ -257,7 +257,7 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                Log("GetConnectedSsid 예외: " + ex.Message);
+                LogError("GetConnectedSsid 예외", ex);
                 return "Wi-Fi 인터페이스 확인 필요";
             }
         }
@@ -371,7 +371,7 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                Log("GetActiveNetworkDetails 오류: " + ex.Message);
+                LogError("GetActiveNetworkDetails 오류", ex);
             }
 
             return details;
@@ -406,7 +406,7 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                Log("ScanNearbyWifiAps 예외: " + ex.Message);
+                LogError("ScanNearbyWifiAps 예외", ex);
             }
             return apList;
         }
@@ -457,7 +457,7 @@ namespace AutoNetSwitcher
                 }
                 catch (Exception ex)
                 {
-                    Log("ConnectToSsid 오류: " + ex.Message);
+                    LogError("ConnectToSsid 오류", ex);
                 }
             });
         }
@@ -518,6 +518,9 @@ namespace AutoNetSwitcher
                 else
                 {
                     Log(string.Format("프로필 적용 취소: '{0}' 연결 실패 (실제 SSID: {1})", p.Ssid, p.OriginalSsid));
+                    ErrorLog.Write("저장된 프로필 적용 (더블클릭)",
+                        string.Format("Wi-Fi '{0}' 연결(인증) 실패로 '{1}' 프로필 적용 취소", p.OriginalSsid, p.Ssid),
+                        "15초 안에 연결되지 않았습니다. Windows에 저장된 Wi-Fi 비밀번호 또는 실제 SSID를 확인하세요.\n현재 연결: " + GetConnectedSsid());
                     notify(string.Format("Wi-Fi '{0}'에 연결(인증)하지 못해 '{1}' 프로필을 적용하지 않았습니다.\nWindows에 저장된 Wi-Fi 비밀번호와 실제 SSID를 확인하세요.", p.OriginalSsid, p.Ssid), ToolTipIcon.Warning);
                 }
             });
@@ -579,7 +582,7 @@ namespace AutoNetSwitcher
                 }
                 catch (Exception ex)
                 {
-                    Log("ApplyStaticIp 예외: " + ex.Message);
+                    LogError("ApplyStaticIp 예외", ex);
                 }
             });
         }
@@ -646,7 +649,7 @@ namespace AutoNetSwitcher
                 }
                 catch (Exception ex)
                 {
-                    Log("ApplyDhcpSilent 예외: " + ex.Message);
+                    LogError("ApplyDhcpSilent 예외", ex);
                 }
             });
         }
@@ -697,7 +700,7 @@ namespace AutoNetSwitcher
                 }
                 catch (Exception ex)
                 {
-                    Log("LoadProfiles 오류: " + ex.Message);
+                    LogError("LoadProfiles 오류", ex);
                 }
             }
         }
@@ -732,7 +735,7 @@ namespace AutoNetSwitcher
                 }
                 catch (Exception ex)
                 {
-                    Log("SaveProfiles 오류: " + ex.Message);
+                    LogError("SaveProfiles 오류", ex);
                 }
             }
         }

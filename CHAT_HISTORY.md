@@ -231,3 +231,37 @@
   - `WaitForWifiConnected` 추가: netsh가 인증 중에도 SSID를 표시하므로 상태가 `connected/연결됨`이 될 때까지 최대 15초 대기 후 프로필 적용, 실패 시 "Wi-Fi 비밀번호/실제 SSID 확인" 트레이 경고
   - `AutoNet.exe` 재빌드 후 재실행 (현재 SHC + 10.101.3.191 정상)
   - **사용자 조치 필요**: Windows 설정 → Wi-Fi → 알려진 네트워크 관리 → SHC_Guest 삭제 후 올바른 비밀번호로 다시 연결
+
+### [사용 매뉴얼 v2.2 — 실제 프로그램 캡처 + 오늘 수정 내용, netsh 인코딩 버그 수정]
+- **일시**: 2026-11-18
+- **요청**: 오늘 수정된 내용을 추가해 매뉴얼 제작, 실제 프로그램 화면을 캡처해 첨부
+- **캡처 중 발견·수정한 버그 (`SecurityHelper.cs`)**:
+  - netsh가 시스템 코드페이지(949)와 무관하게 **UTF-8로 출력**하는데 `Encoding.Default`(CP949)로 읽어 한글 라벨(`상태 : 연결됨`)과 한글 SSID가 깨짐 → 오늘 추가한 `WaitForWifiConnected`가 항상 실패해 더블클릭 적용이 취소되던 원인
+  - `DecodeNetshOutput` 추가: 원본 바이트를 받아 유효한 UTF-8이면 UTF-8, 아니면 시스템 기본 인코딩으로 해석. 자체 점검 6건 통과(UTF-8/CP949/ASCII 디코딩, 실제 어댑터에서 SHC=연결·SHC_Guest=미연결)
+  - `AutoNet.exe` 재빌드 후 재실행, 실제로 '회사' 더블클릭 → 적용 + Windows 알림 확인
+- **매뉴얼 v2.2**:
+  - `manual_images/01~04` 실제 실행 중인 프로그램 캡처로 교체(트레이 우클릭 메뉴만 스크립트로 열 수 없어 기존 렌더 이미지 재사용), `05_profile_apply.png`(카드 선택·더블클릭·실제 적용 알림) 신규
+  - `사용_매뉴얼.md`/`.html`: ④ 저장된 프로필로 바로 전환하기(더블클릭) 절, 5. 문제 해결 절(인증 실패·DHCP 미수신·별칭 프로필), 변경 이력 2.2 추가. `README.md` 동기화
+  - 캡처 과정에서 생긴 "이미 실행 중" 알림 창 2개는 닫음. 바탕화면이 찍힌 원본 캡처는 삭제하고 알림 부분만 잘라 사용
+
+### [사용 매뉴얼 PPT 제작]
+- **일시**: 2026-11-18
+- **요청**: 매뉴얼을 PPT 파일로 제작
+- **결과물**: `AutoNet_사용_매뉴얼_v2.2.pptx` (16:9, 12장, 맑은 고딕, AutoNet 네이비·시안 색상)
+  - 구성: 표지 / 하는 일 / 설치 / 메인 화면 / 연결 상태 / 고정 IP / DHCP / 프로필 관리 / 더블클릭 전환(신규) / Wi-Fi·트레이 메뉴 / 문제 해결 / v2.2 변경 사항
+  - 실제 프로그램 캡처 원본을 크게 넣고 번호 배지·지시선은 PowerPoint 도형으로 그려 수정 가능하게 함
+  - python-pptx로 생성(pptxgenjs 미설치라 추가 설치 없이 진행), PowerPoint 2013 COM으로 전 슬라이드를 이미지로 내보내 시각 점검
+  - 한글이 글자 단위로 줄바꿈되던 문제: 텍스트에 `lang="ko-KR"`을 지정해 어절 단위 줄바꿈으로 해결
+  - 스킬의 validate.py는 defusedxml 미설치로 실행하지 못함(PowerPoint에서 정상 열림·렌더링 확인)
+
+### [오류 로그 AutoNet_Error.log 추가]
+- **일시**: 2026-11-19
+- **요청**: 처음에는 오류를 모아 인터넷 연결 시 이메일로 자동 전송하는 기능을 요청 → 질문 단계에서 취소하고, 오류 원인을 날짜·시간·상세 내용과 함께 `AutoNet_Error` 로그 파일에 기록하는 것으로 변경 (이메일 전송은 구현하지 않음)
+- **구현**:
+  - `src/ErrorLog.cs` 신규: `%LocalAppData%\AutoNet\AutoNet_Error.log` (UTF-8)에 `[yyyy-MM-dd HH:mm:ss.fff]`, 위치, 원인(가장 안쪽 예외 형식+메시지), 환경(레지스트리 기준 실제 Windows 빌드/.NET/관리자 여부), 상세 스택 기록. 스레드 락, 로깅 실패는 무시
+  - `MainForm.LogError(where, ex)` 추가: 기존 catch 12곳의 `Log("...: " + ex.Message)`를 교체(일반 로그 한 줄 + 오류 로그 상세)
+  - `Program.cs`: 미처리 예외·UI 스레드 예외·메인 루프·UAC 거부·뮤텍스 실패를 `autonet_crash.log` 대신 `AutoNet_Error.log`에 기록
+  - `SecurityHelper.ExecuteNetshElevated`: IP/DNS 설정 netsh 실패(종료 코드)·시간 초과·예외를 명령과 함께 기록
+  - 프로필 더블클릭 적용 시 Wi-Fi 인증 실패도 기록
+- **검증**: 자체 점검(중첩 예외·실패 기록, 형식·타임스탬프·들여쓰기) 통과, 빌드 후 AutoNet 재시작(PID 45380)
+- 매뉴얼(md/html) 4절에 `AutoNet_Error.log` 설명 추가

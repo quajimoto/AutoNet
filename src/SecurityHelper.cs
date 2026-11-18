@@ -187,6 +187,24 @@ namespace AutoNetSwitcher
         }
 
         /// <summary>
+        /// netsh 출력 디코딩: 최신 Windows는 시스템 코드페이지(949)와 무관하게 UTF-8로 출력하므로
+        /// 유효한 UTF-8이면 UTF-8로, 아니면 시스템 기본(구버전 CP949) 인코딩으로 해석
+        /// (잘못 해석하면 "상태 : 연결됨" 같은 한글 라벨과 한글 SSID가 깨짐)
+        /// </summary>
+        public static string DecodeNetshOutput(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0) return string.Empty;
+            try
+            {
+                return new UTF8Encoding(false, true).GetString(bytes);
+            }
+            catch (DecoderFallbackException)
+            {
+                return Encoding.Default.GetString(bytes);
+            }
+        }
+
+        /// <summary>
         /// CWE-78, CWE-404: cmd.exe를 거치지 않고 netsh 프로세스를 직접 안전하게 실행
         /// </summary>
         public static bool ExecuteNetshDirect(string arguments, out string output, int timeoutMs = 7000)
@@ -201,7 +219,8 @@ namespace AutoNetSwitcher
             psi.CreateNoWindow = true;
             psi.RedirectStandardOutput = true;
             psi.RedirectStandardError = true;
-            psi.StandardOutputEncoding = Encoding.Default;
+            // 원본 바이트를 그대로 받은 뒤 디코딩 (Latin-1은 바이트를 1:1로 보존)
+            psi.StandardOutputEncoding = Encoding.GetEncoding(28591);
 
             try
             {
@@ -210,7 +229,7 @@ namespace AutoNetSwitcher
                     if (proc == null)
                         return false;
 
-                    output = proc.StandardOutput.ReadToEnd();
+                    output = DecodeNetshOutput(Encoding.GetEncoding(28591).GetBytes(proc.StandardOutput.ReadToEnd()));
                     if (!proc.WaitForExit(timeoutMs))
                     {
                         try { proc.Kill(); } catch { }
@@ -250,13 +269,17 @@ namespace AutoNetSwitcher
                     if (!proc.WaitForExit(timeoutMs))
                     {
                         try { proc.Kill(); } catch { }
+                        ErrorLog.Write("네트워크 설정 명령 (netsh)", "응답 시간 초과 (" + timeoutMs + "ms)", "netsh " + arguments);
                         return false;
                     }
+                    if (proc.ExitCode != 0)
+                        ErrorLog.Write("네트워크 설정 명령 (netsh)", "명령 실패 (종료 코드 " + proc.ExitCode + ")", "netsh " + arguments);
                     return proc.ExitCode == 0;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLog.Write("네트워크 설정 명령 (netsh " + arguments + ")", ex);
                 return false;
             }
         }

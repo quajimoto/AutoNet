@@ -73,7 +73,7 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                Log("초기 로드 중 예외: " + ex.Message);
+                LogError("초기 로드 중 예외", ex);
             }
         }
 
@@ -232,6 +232,15 @@ namespace AutoNetSwitcher
             }
         }
 
+        /// <summary>
+        /// 오류: 일반 로그에는 한 줄, AutoNet_Error.log에는 날짜·시간과 상세 내용 기록
+        /// </summary>
+        public void LogError(string where, Exception ex)
+        {
+            Log(where + ": " + (ex != null ? ex.Message : "알 수 없는 오류"));
+            ErrorLog.Write(where, ex);
+        }
+
         private void BtnAutoToggle_Click(object sender, EventArgs e)
         {
             this.isAutoEnabled = !this.isAutoEnabled;
@@ -259,7 +268,7 @@ namespace AutoNetSwitcher
             }
             catch (Exception ex)
             {
-                Log("클립보드 복사 오류: " + ex.Message);
+                LogError("클립보드 복사 오류", ex);
             }
         }
     }
